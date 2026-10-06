@@ -20,6 +20,9 @@ describe("util", function () {
         const t = u.parseShare("\\\\FILESERVER\\Shared");
         assert.strictEqual(u.resolvePath(t, "\\\\fileserver\\shared\\Dept\\x.txt"), "Dept\\x.txt");
         assert.strictEqual(u.resolvePath(t, "\\\\FILESERVER\\Shared"), "");
+        const tp = u.parseShare("\\\\fs:4450\\Shared");
+        assert.strictEqual(u.resolvePath(tp, "\\\\fs:4450\\Shared\\x.txt"), "x.txt");
+        assert.strictEqual(u.resolvePath(tp, "\\\\fs\\Shared\\x.txt"), "x.txt");
         const tb = u.parseShare("\\\\FILESERVER\\Shared\\Dept");
         assert.strictEqual(u.resolvePath(tb, "x.txt"), "Dept\\x.txt");
         assert.strictEqual(u.resolvePath(tb, ""), "Dept");
@@ -84,5 +87,43 @@ describe("access rights", function () {
             assert.strictEqual(mask & c.FILE_DELETE_CHILD, 0, name + " FILE_DELETE_CHILD");
             assert.ok(mask & c.DELETE && mask & c.FILE_WRITE_DATA, name + " keeps modify rights");
         }
+    });
+});
+
+describe("interim response filter", function () {
+    function frame(status, flags, body) {
+        const h = Buffer.alloc(64);
+        h.writeUInt32LE(0x424d53fe, 0);
+        h.writeUInt16LE(64, 4);
+        h.writeUInt32LE(status, 8);
+        h.writeUInt32LE(flags, 16);
+        const smb = Buffer.concat([h, body]);
+        const nb = Buffer.alloc(4);
+        nb.writeUInt8((smb.length >> 16) & 0xff, 1);
+        nb.writeUInt16BE(smb.length & 0xffff, 2);
+        return Buffer.concat([nb, smb]);
+    }
+    const interim = frame(0x103, 0x3, Buffer.alloc(9));
+    const real1 = frame(0, 0x3, Buffer.from("first response"));
+    const real2 = frame(0xC0000034, 0x1, Buffer.from("error response")); // a real error is kept
+    const syncPending = frame(0x103, 0x1, Buffer.alloc(9));             // without async flag: not interim
+    const stream = Buffer.concat([interim, real1, interim, real2, syncPending]);
+    const expected = Buffer.concat([real1, real2, syncPending]);
+
+    it("drops only interim STATUS_PENDING responses, for every possible TCP split", function () {
+        for (let cut1 = 0; cut1 <= stream.length; cut1++) {
+            const cut2 = Math.min(stream.length, cut1 + 37);
+            const f = u.createInterimFilter();
+            const parts = [stream.slice(0, cut1), stream.slice(cut1, cut2), stream.slice(cut2)]
+                .map((p) => f(p)).filter(Boolean);
+            assert.ok(Buffer.concat(parts).equals(expected), "cut at " + cut1);
+        }
+    });
+
+    it("byte by byte", function () {
+        const f = u.createInterimFilter();
+        const parts = [];
+        for (const b of stream) { const o = f(Buffer.from([b])); if (o) parts.push(o); }
+        assert.ok(Buffer.concat(parts).equals(expected));
     });
 });

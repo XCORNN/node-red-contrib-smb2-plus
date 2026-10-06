@@ -111,13 +111,19 @@ module.exports = function (RED) {
             sock.on("end", markDead("server closed the connection"));
             sock.on("close", markDead("socket closed"));
 
-            // A malformed response would throw inside the socket "data" event and
-            // crash the whole Node-RED process. Contain it.
+            // Wrap the library's "data" handler:
+            //  - drop SMB2 interim STATUS_PENDING responses (sent by busy servers
+            //    before the real answer), which the library treats as errors;
+            //  - contain exceptions from malformed responses, which would
+            //    otherwise crash the whole Node-RED process.
             const dataListeners = sock.listeners("data");
+            const filterInterim = util.createInterimFilter();
             sock.removeAllListeners("data");
             sock.on("data", (chunk) => {
                 try {
-                    for (const l of dataListeners) l.call(sock, chunk);
+                    const data = filterInterim(chunk);
+                    if (!data) return;
+                    for (const l of dataListeners) l.call(sock, data);
                 } catch (e) {
                     c.__protocolError = e;
                     node.warn(`SMB protocol error, resetting connection: ${e.message}`);

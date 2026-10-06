@@ -6,7 +6,7 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
@@ -17,8 +17,8 @@ jobs:
           - { node: 22, nodered: 5 }
     name: Node ${{ matrix.node }} / Node-RED ${{ matrix.nodered }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: ${{ matrix.node }}
       - name: Start Samba test server
@@ -29,15 +29,18 @@ jobs:
           npm install --no-save --no-audit --no-fund node-red@${{ matrix.nodered }}
       - name: Run tests
         run: npm test
+      - name: Samba logs (on failure)
+        if: failure()
+        run: sudo tail -n 80 /var/log/samba/*.log || true
 
   package:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: test
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
-          node-version: 20
+          node-version: 22
       - run: npm install --omit=dev --no-audit --no-fund
       - run: npm pack
       - uses: actions/upload-artifact@v4

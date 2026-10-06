@@ -291,6 +291,53 @@ describe("SMB node: timeouts, retries and reconnection", function () {
         });
     });
 
+    /* ---------------- async responses ---------------- */
+
+    describe("async responses (STATUS_PENDING)", function () {
+        it("interim STATUS_PENDING responses are ignored: every operation completes", async function () {
+            fs.writeFileSync(path.join(TMP, "async.txt"), "async");
+            proxy = await new TestProxy().start();
+            proxy.asyncPending = true;
+            await load(viaProxy({ retries: 0 }), { operation: "msg" });
+            const steps = [
+                [{ operation: "read-dir", filename: "tmp-res" }, (r) => Array.isArray(r.msg.payload)],
+                [{ operation: "read-file", filename: "tmp-res\\async.txt" }, (r) => r.msg.payload === "async"],
+                [{ operation: "info", filename: "tmp-res\\async.txt" }, (r) => r.msg.payload.size === 5],
+                [{ operation: "exists", filename: "tmp-res\\async.txt" }, (r) => r.msg.exists === true],
+                [{ operation: "create", filename: "tmp-res\\async2.txt", payload: "a\n" }, () => true],
+                [{ operation: "create", filename: "tmp-res\\async2.txt", payload: "b\n" }, (r) => r.error.code === "STATUS_OBJECT_NAME_COLLISION"],
+                [{ operation: "rename", filename: "tmp-res\\async2.txt", new_filename: "tmp-res\\async3.txt" }, () => true],
+                [{ operation: "ensure-dir", filename: "tmp-res\\adir\\sub" }, () => true],
+                [{ operation: "unlink", filename: "tmp-res\\async3.txt" }, () => true],
+                [{ operation: "rmdir", filename: "tmp-res\\adir\\sub" }, () => true],
+            ];
+            for (const [m, check] of steps) {
+                const r = await call(m);
+                if (!(r.error && check === steps[5][1])) assert.ok(!r.error, `${m.operation}: ${JSON.stringify(r.error && r.error.code)}`);
+                assert.ok(check(r), m.operation);
+            }
+            assert.ok(proxy.interimSent > 10, "the proxy must have sent interim responses");
+            assert.strictEqual(proxy.connections, 1, "no reconnection needed");
+        });
+
+        it("append and big files with interim responses: no errors, no duplicates", async function () {
+            proxy = await new TestProxy().start();
+            proxy.asyncPending = true;
+            await load(viaProxy({ retries: 0 }), { operation: "create", mode: "append", path: "tmp-res\\async-log.txt" });
+            const res = await callMany(20, (i) => ({ payload: `line ${i}\n` }));
+            assert.deepStrictEqual(res.filter((r) => r.error).map((r) => r.error.code), []);
+            assert.strictEqual(fs.readFileSync(path.join(TMP, "async-log.txt"), "utf8"),
+                Array.from({ length: 20 }, (_, i) => `line ${i}\n`).join(""));
+            await helper.unload();
+            const big = Buffer.alloc(3 * 1024 * 1024 + 7, 0x5a);
+            await load(viaProxy({ retries: 0 }), { operation: "msg" });
+            let r = await call({ operation: "create", mode: "overwrite", filename: "tmp-res\\async-big.bin", payload: big });
+            assert.ok(!r.error, JSON.stringify(r.error && r.error.code));
+            r = await call({ operation: "read-file", filename: "tmp-res\\async-big.bin", encoding: "binary" });
+            assert.ok(r.msg && r.msg.payload.equals(big), JSON.stringify(r.error && r.error.code));
+        });
+    });
+
     /* ---------------- queue ---------------- */
 
     describe("queue", function () {

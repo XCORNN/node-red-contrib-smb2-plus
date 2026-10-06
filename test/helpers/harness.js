@@ -14,6 +14,7 @@ const unhandled = [];
 process.on("unhandledRejection", (r) => unhandled.push(r));
 
 function share(port, sub) {
+    if (!port && env.port !== 445) port = env.port;
     const host = port ? `${env.host}:${port}` : env.host;
     return `\\\\${host}\\${env.share}${sub ? "\\" + sub : ""}`;
 }

@@ -14,6 +14,9 @@ Fork of node-red-contrib-smb2.5 1.16.0. Node type names are unchanged, existing 
   Login and "share not found" errors are never retried.
 - Ordinary file errors (e.g. "not found") no longer tear down the connection and abort other operations.
 - Idle sessions are closed (default 30 s) instead of being kept open forever.
+- SMB2 interim responses (`STATUS_PENDING`) are handled as the protocol requires: they are ignored and the final
+  response is awaited. The library delivered them as errors, so busy or slow servers produced random
+  `STATUS_PENDING` failures on reads, writes and listings.
 - Exceptions while parsing server responses are contained instead of crashing Node-RED.
 - Queue limit (1000 operations) to protect memory when the server is unreachable.
 - Maximum read size (default 100 MB) to protect memory.
@@ -43,7 +46,7 @@ Fork of node-red-contrib-smb2.5 1.16.0. Node type names are unchanged, existing 
 - Node status shows the error code and the number of pending operations.
 - Editor UI and help in English and Spanish; bundled example flow.
 - Test suite: unit tests plus integration tests against a real Samba server, including network-failure
-  simulation (hung server, dropped connections, latency). Tested on Node-RED 2.2, 3.1, 4.1 and 5.0.
+  simulation (hung server, dropped connections, latency, interim `STATUS_PENDING` responses). Tested on Node-RED 2.2, 3.1, 4.1 and 5.0.
 
 ### Removed
 - Japanese and Chinese locales (outdated after the new options; English is used as fallback).

@@ -19,6 +19,7 @@ o pueden tumbar Node-RED. Medido contra el mismo servidor Samba:
 | 25 lecturas simultáneas | 0 correctas, 1 error, **24 mensajes sin respuesta** | 25 correctas |
 | El servidor corta la sesión | 1 error `EPIPE`, **1 mensaje sin respuesta** | Reconecta de forma transparente |
 | Servidor caído o colgado | Espera indefinidamente | `SMB_TIMEOUT` tras el tiempo configurado |
+| Servidor ocupado o lento (respuestas provisionales `STATUS_PENDING`) | Errores `STATUS_PENDING` aleatorios | Espera la respuesta definitiva |
 | Respuesta malformada del servidor | Excepción no capturada (puede tumbar Node-RED) | Reinicia la conexión e informa del error |
 
 Qué hace:

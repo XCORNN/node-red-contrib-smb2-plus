@@ -18,6 +18,7 @@ the whole Node-RED process to crash. Measured against the same Samba server:
 | 25 simultaneous reads | 0 OK, 1 error, **24 messages never answered** | 25 OK |
 | Server drops the session | 1 `EPIPE` error, **1 message never answered** | Reconnects transparently |
 | Server unreachable / hung | Waits forever | `SMB_TIMEOUT` after the configured time |
+| Busy or slow server (interim `STATUS_PENDING` responses) | Random `STATUS_PENDING` errors | Waits for the final response |
 | Malformed server response | Uncaught exception (can crash Node-RED) | Connection reset, error reported |
 
 What it does:

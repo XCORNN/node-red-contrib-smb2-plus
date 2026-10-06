@@ -70,10 +70,13 @@ function normPath(p) {
  */
 function resolvePath(target, p) {
     let rel = normPath(p);
-    const prefix = normPath(`${target.host}\\${target.share}`).toLowerCase();
+    const prefixes = [normPath(`${target.host}\\${target.share}`).toLowerCase()];
+    if (target.port) prefixes.push(normPath(`${target.host}:${target.port}\\${target.share}`).toLowerCase());
     const lower = rel.toLowerCase();
-    if (lower === prefix) rel = "";
-    else if (lower.startsWith(prefix + "\\")) rel = rel.slice(prefix.length + 1);
+    for (const prefix of prefixes) {
+        if (lower === prefix) { rel = ""; break; }
+        if (lower.startsWith(prefix + "\\")) { rel = rel.slice(prefix.length + 1); break; }
+    }
     if (target.basePath) {
         const base = normPath(target.basePath);
         const lb = base.toLowerCase();
@@ -290,6 +293,40 @@ function classifyError(err) {
     return { reset: true, retry: false };
 }
 
+/* ------------------------------------------------------------------ */
+/* SMB2 interim responses                                              */
+/* ------------------------------------------------------------------ */
+
+const STATUS_PENDING = 0x00000103;
+const SMB2_FLAGS_ASYNC_COMMAND = 0x00000002;
+
+/**
+ * Splits the server byte stream into NetBIOS frames and drops SMB2 interim
+ * responses (STATUS_PENDING + async flag, MS-SMB2 3.3.4.2). The library would
+ * otherwise deliver the interim response as the final result and fail with
+ * STATUS_PENDING. The real response arrives later with the same MessageId.
+ * Returns a function(chunk) -> Buffer|null with the bytes to pass on.
+ */
+function createInterimFilter() {
+    let buffer = Buffer.alloc(0);
+    return function filter(chunk) {
+        buffer = buffer.length ? Buffer.concat([buffer, chunk]) : chunk;
+        const out = [];
+        while (buffer.length >= 4) {
+            const len = (buffer[1] << 16) + buffer.readUInt16BE(2);
+            if (buffer.length < len + 4) break;
+            const frame = buffer.slice(0, len + 4);
+            buffer = buffer.slice(len + 4);
+            const isInterim = len >= 64 &&
+                frame.readUInt32LE(4) === 0x424d53fe &&                       // "\xFESMB"
+                frame.readUInt32LE(4 + 8) === STATUS_PENDING &&
+                (frame.readUInt32LE(4 + 16) & SMB2_FLAGS_ASYNC_COMMAND) !== 0;
+            if (!isInterim) out.push(frame);
+        }
+        return out.length ? Buffer.concat(out) : null;
+    };
+}
+
 /** Converts library stat objects into plain JSON-friendly objects. */
 function plainStat(st, name, path) {
     if (!st) return st;
@@ -322,4 +359,5 @@ module.exports = {
     payloadToBuffer,
     classifyError,
     plainStat,
+    createInterimFilter,
 };
