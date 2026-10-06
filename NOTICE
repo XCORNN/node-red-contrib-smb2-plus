@@ -1,0 +1,15 @@
+node-red-contrib-smb2-plus
+Copyright 2026 node-red-contrib-smb2-plus contributors
+
+This product is a modified version of node-red-contrib-smb2.5
+(https://github.com/Delevin888/node-red-contrib-smb2.5), which derives from
+node-red-contrib-smb (ST-One project), licensed under the Apache License 2.0:
+
+  Copyright 2018-2020 ST-One Ltda. / Smart-Tech Controle e Automação
+  Copyright 2023 Y., Ryota
+  Copyright 2024 Delevin888
+
+Main modifications are listed in CHANGELOG.md.
+
+The package bundles @tryjsky/v9u-smb2 (MIT License, Copyright Y., Ryota) and its
+dependencies, each distributed under its own license (see node_modules/*/LICENSE*).

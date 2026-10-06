@@ -1,0 +1,46 @@
+name: tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { node: 18, nodered: 2 }
+          - { node: 18, nodered: 3 }
+          - { node: 20, nodered: 4 }
+          - { node: 22, nodered: 5 }
+    name: Node ${{ matrix.node }} / Node-RED ${{ matrix.nodered }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - name: Start Samba test server
+        run: sudo -E bash test/setup-samba.sh
+      - name: Install dependencies
+        run: |
+          npm install --no-audit --no-fund
+          npm install --no-save --no-audit --no-fund node-red@${{ matrix.nodered }}
+      - name: Run tests
+        run: npm test
+
+  package:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm install --omit=dev --no-audit --no-fund
+      - run: npm pack
+      - uses: actions/upload-artifact@v4
+        with:
+          name: package
+          path: "*.tgz"

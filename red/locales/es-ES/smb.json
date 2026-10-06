@@ -1,0 +1,70 @@
+{
+    "smb": {
+        "label": {
+            "name": "Nombre",
+            "share": "Recurso compartido",
+            "domain": "Dominio",
+            "username": "Usuario",
+            "password": "Contraseña",
+            "config": "Conexión",
+            "operation": "Operación",
+            "path": "Ruta",
+            "path-new": "Ruta nueva",
+            "format": "Salida",
+            "mode": "Si el archivo existe",
+            "encoding": "Codificación",
+            "overwrite": "Sobrescribir el destino si existe",
+            "detailed": "Incluir detalles (tamaño, fechas, tipo)",
+            "advanced": "Opciones avanzadas",
+            "port": "Puerto",
+            "timeout": "Timeout por operación",
+            "idle": "Cerrar sesión inactiva tras",
+            "retries": "Reintentos",
+            "maxread": "Tamaño máx. lectura",
+            "seconds": "segundos"
+        },
+        "placeholder": {
+            "share": "\\\\servidor.dominio.local\\recurso",
+            "domain": "DOMINIO (vacío para cuentas locales)",
+            "username": "usuario (o DOMINIO\\usuario)",
+            "path": "carpeta\\archivo.txt (vacío = msg.filename)",
+            "path-new": "carpeta\\nuevo.txt (vacío = msg.new_filename)"
+        },
+        "operation": {
+            "read-dir": "Listar carpeta",
+            "read-file": "Leer archivo",
+            "unlink": "Borrar archivo",
+            "rename": "Renombrar / Mover",
+            "create": "Escribir archivo",
+            "mkdir": "Crear carpeta",
+            "rmdir": "Borrar carpeta",
+            "exists": "Existe",
+            "ensure-dir": "Asegurar carpeta",
+            "info": "Información",
+            "msg": "- según msg.operation -"
+        },
+        "format": {
+            "string": "Texto UTF-8",
+            "auto": "Texto, detectar codificación",
+            "windows-1252": "Texto Windows-1252 (ANSI)",
+            "utf16le": "Texto UTF-16 LE",
+            "latin1": "Texto ISO-8859-1",
+            "binary": "Buffer binario"
+        },
+        "mode": {
+            "create": "Dar error (no tocarlo)",
+            "overwrite": "Sobrescribir",
+            "append": "Añadir al final"
+        },
+        "encoding": {
+            "utf8": "UTF-8",
+            "utf8bom": "UTF-8 con BOM (CSV para Excel)",
+            "windows-1252": "Windows-1252 (ANSI)",
+            "utf16le": "UTF-16 LE con BOM",
+            "latin1": "ISO-8859-1"
+        },
+        "tip": {
+            "advanced": "<b>Timeout</b>: tiempo máximo de una operación (0 = sin límite).<br><b>Inactividad</b>: la sesión se cierra tras este tiempo sin uso y se reabre sola cuando hace falta; mantenlo por debajo del timeout del servidor (0 = no cerrar nunca).<br><b>Reintentos</b>: intentos extra tras un error de conexión, solo si es seguro (añadir, crear, renombrar y borrar no se repiten si el servidor pudo haberlos ejecutado). Los errores de login nunca se reintentan.<br><b>Tamaño máx. lectura</b>: los archivos se leen enteros en memoria; los más grandes se rechazan (0 = sin límite)."
+        }
+    }
+}

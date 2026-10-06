@@ -1,0 +1,303 @@
+[
+  {
+    "id": "a1b2c3d4e5f60001",
+    "type": "tab",
+    "label": "SMB examples",
+    "info": "Edit the **smb config** node: set your server, share, domain and credentials.\nPaths are relative to the share."
+  },
+  {
+    "id": "a1b2c3d4e5f60002",
+    "type": "smb config",
+    "name": "File server",
+    "share": "\\\\fileserver.example.local\\Shared",
+    "domain": "",
+    "port": "",
+    "timeout": 60,
+    "idleTimeout": 30,
+    "retries": 1,
+    "maxReadMB": 100,
+    "username": "",
+    "password": ""
+  },
+  {
+    "id": "a1b2c3d4e5f60010",
+    "type": "comment",
+    "z": "a1b2c3d4e5f60001",
+    "name": "1) List a folder with details",
+    "info": "",
+    "x": 160,
+    "y": 40,
+    "wires": []
+  },
+  {
+    "id": "a1b2c3d4e5f60011",
+    "type": "inject",
+    "z": "a1b2c3d4e5f60001",
+    "name": "list",
+    "props": [],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "",
+    "x": 110,
+    "y": 80,
+    "wires": [
+      [
+        "a1b2c3d4e5f60012"
+      ]
+    ]
+  },
+  {
+    "id": "a1b2c3d4e5f60012",
+    "type": "SMB",
+    "z": "a1b2c3d4e5f60001",
+    "name": "",
+    "config": "a1b2c3d4e5f60002",
+    "operation": "read-dir",
+    "path": "Reports\\2026",
+    "path_new": "",
+    "format": "string",
+    "mode": "create",
+    "encoding": "utf8",
+    "overwrite": false,
+    "detailed": true,
+    "x": 310,
+    "y": 80,
+    "wires": [
+      [
+        "a1b2c3d4e5f60090"
+      ]
+    ]
+  },
+  {
+    "id": "a1b2c3d4e5f60020",
+    "type": "comment",
+    "z": "a1b2c3d4e5f60001",
+    "name": "2) Read a CSV (detects UTF-8 / Windows-1252)",
+    "info": "",
+    "x": 210,
+    "y": 140,
+    "wires": []
+  },
+  {
+    "id": "a1b2c3d4e5f60021",
+    "type": "inject",
+    "z": "a1b2c3d4e5f60001",
+    "name": "read",
+    "props": [
+      {
+        "p": "filename",
+        "v": "Reports\\2026\\data.csv",
+        "vt": "str"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "",
+    "x": 110,
+    "y": 180,
+    "wires": [
+      [
+        "a1b2c3d4e5f60022"
+      ]
+    ]
+  },
+  {
+    "id": "a1b2c3d4e5f60022",
+    "type": "SMB",
+    "z": "a1b2c3d4e5f60001",
+    "name": "",
+    "config": "a1b2c3d4e5f60002",
+    "operation": "read-file",
+    "path": "",
+    "path_new": "",
+    "format": "auto",
+    "mode": "create",
+    "encoding": "utf8",
+    "overwrite": false,
+    "detailed": false,
+    "x": 310,
+    "y": 180,
+    "wires": [
+      [
+        "a1b2c3d4e5f60090"
+      ]
+    ]
+  },
+  {
+    "id": "a1b2c3d4e5f60030",
+    "type": "comment",
+    "z": "a1b2c3d4e5f60001",
+    "name": "3) Append a line to a daily CSV log (creates the folder if missing)",
+    "info": "",
+    "x": 290,
+    "y": 240,
+    "wires": []
+  },
+  {
+    "id": "a1b2c3d4e5f60031",
+    "type": "inject",
+    "z": "a1b2c3d4e5f60001",
+    "name": "every minute",
+    "props": [
+      {
+        "p": "payload"
+      }
+    ],
+    "repeat": "60",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "",
+    "payload": "",
+    "payloadType": "date",
+    "x": 130,
+    "y": 280,
+    "wires": [
+      [
+        "a1b2c3d4e5f60032"
+      ]
+    ]
+  },
+  {
+    "id": "a1b2c3d4e5f60032",
+    "type": "function",
+    "z": "a1b2c3d4e5f60001",
+    "name": "build line",
+    "func": "const now = new Date();\nconst day = now.toISOString().slice(0, 10);\nmsg.folder = \"Reports\\\\logs\";\nmsg.filename = msg.folder;               // used by \"ensure directory\"\nmsg.logfile = msg.folder + \"\\\\log_\" + day + \".csv\";\nmsg.line = now.toISOString() + \";\" + Math.round(Math.random() * 100) + \"\\n\";\nreturn msg;",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 310,
+    "y": 280,
+    "wires": [
+      [
+        "a1b2c3d4e5f60033"
+      ]
+    ]
+  },
+  {
+    "id": "a1b2c3d4e5f60033",
+    "type": "SMB",
+    "z": "a1b2c3d4e5f60001",
+    "name": "ensure folder",
+    "config": "a1b2c3d4e5f60002",
+    "operation": "ensure-dir",
+    "path": "",
+    "path_new": "",
+    "format": "string",
+    "mode": "create",
+    "encoding": "utf8",
+    "overwrite": false,
+    "detailed": false,
+    "x": 490,
+    "y": 280,
+    "wires": [
+      [
+        "a1b2c3d4e5f60034"
+      ]
+    ]
+  },
+  {
+    "id": "a1b2c3d4e5f60034",
+    "type": "function",
+    "z": "a1b2c3d4e5f60001",
+    "name": "set file",
+    "func": "msg.filename = msg.logfile;\nmsg.payload = msg.line;\nreturn msg;",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 660,
+    "y": 280,
+    "wires": [
+      [
+        "a1b2c3d4e5f60035"
+      ]
+    ]
+  },
+  {
+    "id": "a1b2c3d4e5f60035",
+    "type": "SMB",
+    "z": "a1b2c3d4e5f60001",
+    "name": "append to CSV",
+    "config": "a1b2c3d4e5f60002",
+    "operation": "create",
+    "path": "",
+    "path_new": "",
+    "format": "string",
+    "mode": "append",
+    "encoding": "utf8bom",
+    "overwrite": false,
+    "detailed": false,
+    "x": 830,
+    "y": 280,
+    "wires": [
+      [
+        "a1b2c3d4e5f60090"
+      ]
+    ]
+  },
+  {
+    "id": "a1b2c3d4e5f60090",
+    "type": "debug",
+    "z": "a1b2c3d4e5f60001",
+    "name": "result",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "payload",
+    "targetType": "msg",
+    "statusVal": "",
+    "statusType": "auto",
+    "x": 1030,
+    "y": 180,
+    "wires": []
+  },
+  {
+    "id": "a1b2c3d4e5f60091",
+    "type": "catch",
+    "z": "a1b2c3d4e5f60001",
+    "name": "SMB errors",
+    "scope": [
+      "a1b2c3d4e5f60012",
+      "a1b2c3d4e5f60022",
+      "a1b2c3d4e5f60033",
+      "a1b2c3d4e5f60035"
+    ],
+    "uncaught": false,
+    "x": 120,
+    "y": 360,
+    "wires": [
+      [
+        "a1b2c3d4e5f60092"
+      ]
+    ]
+  },
+  {
+    "id": "a1b2c3d4e5f60092",
+    "type": "debug",
+    "z": "a1b2c3d4e5f60001",
+    "name": "error",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "error",
+    "targetType": "msg",
+    "statusVal": "",
+    "statusType": "auto",
+    "x": 310,
+    "y": 360,
+    "wires": []
+  }
+]

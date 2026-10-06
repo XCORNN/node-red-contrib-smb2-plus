@@ -1,0 +1,61 @@
+<script type="text/html" data-help-name="SMB">
+    <p>Lee y escribe archivos en carpetas compartidas de Windows / Samba (SMB2).</p>
+
+    <h3>Entradas</h3>
+    <dl class="message-properties">
+        <dt class="optional">filename <span class="property-type">string</span></dt>
+        <dd>Ruta a usar si el campo <i>Ruta</i> del nodo está vacío. Relativa al recurso compartido, p. ej.
+            <code>carpeta\archivo.txt</code>. También acepta <code>/</code>. Si pegas la ruta UNC completa
+            del recurso configurado, se recorta automáticamente.</dd>
+        <dt class="optional">new_filename <span class="property-type">string</span></dt>
+        <dd>Destino para <i>Renombrar / Mover</i> si <i>Ruta nueva</i> está vacía.</dd>
+        <dt class="optional">payload <span class="property-type">string | Buffer | object</span></dt>
+        <dd>Contenido para <i>Escribir archivo</i>. Los objetos se escriben como JSON.</dd>
+        <dt class="optional">operation <span class="property-type">string</span></dt>
+        <dd>Solo con la operación <i>según msg.operation</i>: <code>read-dir</code>, <code>read-file</code>,
+            <code>create</code>, <code>rename</code>, <code>unlink</code>, <code>mkdir</code>,
+            <code>ensure-dir</code>, <code>rmdir</code>, <code>exists</code> o <code>info</code>.</dd>
+        <dt class="optional">encoding <span class="property-type">string</span></dt>
+        <dd>Sustituye el formato de salida (lectura) o la codificación (escritura) del nodo.</dd>
+    </dl>
+
+    <h3>Salidas</h3>
+    <dl class="message-properties">
+        <dt>payload</dt>
+        <dd><i>Listar carpeta</i>: array de nombres, o de objetos
+            <code>{name, path, isDirectory, size, mtime, ...}</code> con <i>Incluir detalles</i>.<br>
+            <i>Leer archivo</i>: texto o Buffer.<br>
+            <i>Información</i>: <code>{name, path, isDirectory, size, birthtime, mtime, atime, ctime}</code>.</dd>
+        <dt>exists <span class="property-type">boolean</span></dt>
+        <dd>Resultado de la operación <i>Existe</i>.</dd>
+    </dl>
+
+    <h3>Detalles</h3>
+    <p>Las operaciones que comparten conexión se encolan y se ejecutan de una en una, y cada una tiene un
+       tiempo máximo. Tras un problema de conexión (sesión caducada, socket cerrado, timeout) se abre una
+       sesión nueva y se reintenta <b>solo si es seguro</b>: lecturas, listados, sobrescrituras y
+       <i>asegurar carpeta</i> se reintentan siempre; añadir, crear, renombrar y borrar solo si la petición
+       no llegó al servidor. Los errores de login nunca se reintentan, para no bloquear la cuenta.</p>
+    <p>Si hay error no se envía mensaje: usa un nodo <b>catch</b>. En <code>msg.smbError.code</code> tienes
+       el código (también en <code>msg.error.code</code> con Node-RED 4+), p. ej.
+       <code>STATUS_OBJECT_NAME_NOT_FOUND</code>, <code>STATUS_ACCESS_DENIED</code>,
+       <code>STATUS_LOGON_FAILURE</code>, <code>STATUS_OBJECT_NAME_COLLISION</code> (ya existe),
+       <code>SMB_TIMEOUT</code>, <code>SMB_FILE_TOO_LARGE</code>.</p>
+    <p><i>Añadir al final</i> lee el archivo existente y lo reescribe con el contenido nuevo al final;
+       ideal para logs y CSV, no para archivos enormes.</p>
+</script>
+
+<script type="text/html" data-help-name="smb config">
+    <p>Conexión a un recurso compartido SMB.</p>
+    <dl class="message-properties">
+        <dt>Recurso compartido</dt>
+        <dd><code>\\servidor\recurso</code>. Puede incluir una subcarpeta
+            (<code>\\servidor\recurso\sub\carpeta</code>) y todas las rutas serán relativas a ella. Si Node-RED
+            corre en Docker/Linux usa el nombre DNS completo (<code>servidor.dominio.local</code>) o la IP.</dd>
+        <dt>Dominio</dt>
+        <dd>Nombre del dominio (p. ej. <code>EMPRESA</code> o <code>empresa.local</code>). Vacío para cuentas
+            locales. También vale <code>DOMINIO\usuario</code> o <code>usuario@dominio</code> en el usuario.</dd>
+        <dt>Usuario / Contraseña</dt>
+        <dd>Se guardan cifrados en el archivo de credenciales de Node-RED, no en el flujo.</dd>
+    </dl>
+</script>

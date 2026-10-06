@@ -1,5 +1,6 @@
 <!--
 Copyright 2018 Smart-Tech Controle e Automação
+Copyright 2026 node-red-contrib-smb2-plus contributors
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -11,153 +12,89 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<script type="text/x-red" data-template-name="SMB">
+<!-- ============================ OPERATION NODE ============================ -->
 
+<script type="text/html" data-template-name="SMB">
     <div class="form-row">
-        <label for="node-input-config">
-            <i class="fa fa-cog"></i>
-            <span data-i18n="smb.label.config"></span>
-        </label>
+        <label for="node-input-config"><i class="fa fa-cog"></i> <span data-i18n="smb.label.config"></span></label>
         <input type="text" id="node-input-config">
     </div>
 
     <div class="form-row">
-        <label for="node-input-operation">
-            <i class="fa fa-bars"></i>
-            <span data-i18n="smb.label.operation"></span>
-        </label>
-        <select type="text" id="node-input-operation">
-            <option value="read-dir" data-i18n="smb.operation.read-dir"> </option>
-            <option value="read-file" data-i18n="smb.operation.read-file"> </option>
-            <option value="unlink" data-i18n="smb.operation.unlink"> </option>
-            <option value="rename" data-i18n="smb.operation.rename"> </option>
-            <option value="create" data-i18n="smb.operation.create"> </option>
-            <option value="mkdir" data-i18n="smb.operation.mkdir"> </option>
-            <option value="rmdir" data-i18n="smb.operation.rmdir"> </option>
-            <option value="exists" data-i18n="smb.operation.exists"> </option>
-            <option value="ensure-dir" data-i18n="smb.operation.ensure-dir"> </option>
-            <option value="info" data-i18n="smb.operation.info"> </option>
+        <label for="node-input-operation"><i class="fa fa-bars"></i> <span data-i18n="smb.label.operation"></span></label>
+        <select id="node-input-operation">
+            <option value="read-dir" data-i18n="smb.operation.read-dir"></option>
+            <option value="read-file" data-i18n="smb.operation.read-file"></option>
+            <option value="create" data-i18n="smb.operation.create"></option>
+            <option value="rename" data-i18n="smb.operation.rename"></option>
+            <option value="unlink" data-i18n="smb.operation.unlink"></option>
+            <option value="mkdir" data-i18n="smb.operation.mkdir"></option>
+            <option value="ensure-dir" data-i18n="smb.operation.ensure-dir"></option>
+            <option value="rmdir" data-i18n="smb.operation.rmdir"></option>
+            <option value="exists" data-i18n="smb.operation.exists"></option>
+            <option value="info" data-i18n="smb.operation.info"></option>
+            <option value="msg" data-i18n="smb.operation.msg"></option>
         </select>
     </div>
 
     <div class="form-row">
-        <label for="node-input-path">
-            <i class="fa fa-folder-open"></i>
-            <span data-i18n="smb.label.path"></span>
-        </label>
+        <label for="node-input-path"><i class="fa fa-folder-open"></i> <span data-i18n="smb.label.path"></span></label>
         <input type="text" id="node-input-path" data-i18n="[placeholder]smb.placeholder.path">
     </div>
 
-    <div class="form-row" id="new-path">
-        <label for="node-input-path_new">
-            <i class="fa fa-folder-open"></i>
-            <span data-i18n="smb.label.path-new"></span>
-        </label>
+    <div class="form-row smb-row-rename">
+        <label for="node-input-path_new"><i class="fa fa-folder-open"></i> <span data-i18n="smb.label.path-new"></span></label>
         <input type="text" id="node-input-path_new" data-i18n="[placeholder]smb.placeholder.path-new">
     </div>
 
-    <div class="form-row" id="smb-output-format">
-        <label for="node-input-format">
-            <i class="fa fa-sign-out"></i>
-            <span data-i18n="smb.label.format"></span>
-        </label>
-        <select type="text" id="node-input-format">
+    <div class="form-row smb-row-rename">
+        <label>&nbsp;</label>
+        <input type="checkbox" id="node-input-overwrite" style="display:inline-block; width:auto; vertical-align:top;">
+        <label for="node-input-overwrite" style="width:auto;" data-i18n="smb.label.overwrite"></label>
+    </div>
+
+    <div class="form-row smb-row-readdir">
+        <label>&nbsp;</label>
+        <input type="checkbox" id="node-input-detailed" style="display:inline-block; width:auto; vertical-align:top;">
+        <label for="node-input-detailed" style="width:auto;" data-i18n="smb.label.detailed"></label>
+    </div>
+
+    <div class="form-row smb-row-read">
+        <label for="node-input-format"><i class="fa fa-sign-out"></i> <span data-i18n="smb.label.format"></span></label>
+        <select id="node-input-format">
             <option value="string" data-i18n="smb.format.string"></option>
+            <option value="auto" data-i18n="smb.format.auto"></option>
+            <option value="windows-1252" data-i18n="smb.format.windows-1252"></option>
+            <option value="utf16le" data-i18n="smb.format.utf16le"></option>
+            <option value="latin1" data-i18n="smb.format.latin1"></option>
             <option value="binary" data-i18n="smb.format.binary"></option>
         </select>
     </div>
 
-    <div class="form-row">
-        <label for="node-input-name">
-            <i class="fa fa-tag"></i>
-            <span data-i18n="smb.label.name"></span>
-        </label>
-        <input type="text" id="node-input-name">
+    <div class="form-row smb-row-create">
+        <label for="node-input-mode"><i class="fa fa-pencil"></i> <span data-i18n="smb.label.mode"></span></label>
+        <select id="node-input-mode">
+            <option value="create" data-i18n="smb.mode.create"></option>
+            <option value="overwrite" data-i18n="smb.mode.overwrite"></option>
+            <option value="append" data-i18n="smb.mode.append"></option>
+        </select>
     </div>
 
-</script>
+    <div class="form-row smb-row-create">
+        <label for="node-input-encoding"><i class="fa fa-font"></i> <span data-i18n="smb.label.encoding"></span></label>
+        <select id="node-input-encoding">
+            <option value="utf8" data-i18n="smb.encoding.utf8"></option>
+            <option value="utf8bom" data-i18n="smb.encoding.utf8bom"></option>
+            <option value="windows-1252" data-i18n="smb.encoding.windows-1252"></option>
+            <option value="utf16le" data-i18n="smb.encoding.utf16le"></option>
+            <option value="latin1" data-i18n="smb.encoding.latin1"></option>
+        </select>
+    </div>
 
-<script type="text/x-red" data-help-name="SMB">
-    <p>
-        Implements the SMB protocol and their operations, used
-        to read and write to shared folders on Windows&reg;
-    </p>
-
-    <h3>Input</h3>
-    <dl class="message-properties">
-        <dt>payload
-            <span class="property-type">string|Buffer</span>
-        </dt>
-        <dd>
-            the (optional) content of the created file
-            when using the <code>Create File</code> operation.
-        </dd>
-
-        <dt>filename
-            <span class="property-type">string</span>
-        </dt>
-        <dd>
-            if not set in the configuration of the node, this defines 
-            the path for the operation.
-        </dd>
-
-        <dt>new_filename
-            <span class="property-type">string</span>
-        </dt>
-        <dd>
-            if not set in the configuration of the node, this defines 
-            the new path for the <code>Rename / Move file</code> operation.
-        </dd>
-    </dl>
-
-
-    <h3>Details</h3>
-    <p>
-        The action performed by the node depends on the operation
-        selected on the configuration, among the following options:
-    </p>
-    <ul>
-        <li>
-            <b>Read directory:</b> Lists the content of the provided 
-            path, returning an Array on <code>msg.payload</code> with
-            all the files and folders of the directory
-        </li>
-        <li>
-            <b>Read file:</b> Reads the content of the file on the
-            provided path. The output format can be selected between
-            a UTF-8 formatted string or the raw Buffer 
-        </li>
-        <li>
-            <b>Remove file:</b> Removes the file/folder provided by
-            the path
-        </li>
-        <li>
-            <b>Rename/Move file:</b> Renames or moves a file/folder,
-            by changing it location from the original provided path
-            to the new provided path
-        </li>
-        <li>
-            <b>Create file:</b> Creates a file on the provided path
-            with the (optional) content of <code>msg.payload</code>
-        </li>
-        <li>
-            <b>Create directory:</b> Creates a new directory on the provided path
-        </li>
-        <li>
-            <b>Remove directory:</b> Removes the directory on the provided path
-        </li>
-        <li>
-            <b>Exists:</b> Returns on <code>msg.exists</code> whether
-            the provided path exists on the target
-        </li>
-        <li>
-            <b>Ensure dir:</b> Tests if the a directory exists on the
-            provided path, creating it (and its parents) in the case
-            it doesn't exists
-        </li>
-
-    </ul>
-
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> <span data-i18n="smb.label.name"></span></label>
+        <input type="text" id="node-input-name">
+    </div>
 </script>
 
 <script type="text/javascript">
@@ -165,187 +102,177 @@ limitations under the License.
         category: 'storage',
         color: '#DEB887',
         defaults: {
-            name: {
-                value: ""
-            },
-            config: {
-                value: "",
-                type: "smb config"
-            },
-            operation: {
-                value: "read-dir"
-            },
-            path: {
-                value: ""
-            },
-            path_new: {
-                value: ""
-            },
-            format: {
-                value: "string"
-            }
-
+            name: { value: "" },
+            config: { value: "", type: "smb config" },
+            operation: { value: "read-dir" },
+            path: { value: "" },
+            path_new: { value: "" },
+            format: { value: "string" },
+            mode: { value: "create" },
+            encoding: { value: "utf8" },
+            overwrite: { value: false },
+            detailed: { value: false }
         },
         inputs: 1,
         outputs: 1,
         icon: "file.png",
         paletteLabel: "smb",
         label: function () {
-
-            if (this.name) {
-                return this.name;
+            if (this.name) return this.name;
+            var cfg = RED.nodes.node(this.config);
+            if (cfg) {
+                return cfg.label() + " : " + this._("smb.operation." + this.operation);
             }
-
-            var selectConfig = RED.nodes.node(this.config);
-
-            if (selectConfig) {
-                let operation = this._("smb.operation." + this.operation);
-                return selectConfig.label() + " : " + operation;
-            } else {
-                return "smb"
-            }
-
+            return "smb";
         },
         labelStyle: function () {
             return this.name ? "node_label_italic" : "";
         },
         oneditprepare: function () {
-
-            let new_path = $("#new-path");
-            let format = $("#smb-output-format");
-            let operation_select = $("#node-input-operation");
-
-            if (this.format === undefined) {
-                this.format = "string";
-            }
+            var self = this;
+            if (self.format === undefined) $("#node-input-format").val("string");
+            if (self.mode === undefined) $("#node-input-mode").val("create");
+            if (self.encoding === undefined) $("#node-input-encoding").val("utf8");
 
             function onOperationChange() {
-
-                new_path.hide();
-                format.hide();
-
-                var operationVal = operation_select.val();
-
-                if (operationVal == "rename") {
-                    new_path.show();
-                } else if (operationVal === "read-file") {
-                    format.show();
-                }
+                var op = $("#node-input-operation").val();
+                var dyn = op === "msg";
+                $(".smb-row-rename").toggle(op === "rename" || dyn);
+                $(".smb-row-read").toggle(op === "read-file" || dyn);
+                $(".smb-row-create").toggle(op === "create" || dyn);
+                $(".smb-row-readdir").toggle(op === "read-dir" || dyn);
             }
-
-            operation_select.change(onOperationChange);
+            $("#node-input-operation").on("change", onOperationChange);
             onOperationChange();
         }
     });
 </script>
 
+<!-- ============================ CONFIG NODE ============================ -->
 
-
-<!-- CONFIG -->
-
-<script type="text/x-red" data-template-name="smb config">
-
+<script type="text/html" data-template-name="smb config">
     <div class="form-row">
-        <label for="node-config-input-share">
-            <i class="fa fa-sitemap"></i>
-            <span data-i18n="smb.label.share"></span>
-        </label>
+        <label for="node-config-input-share"><i class="fa fa-sitemap"></i> <span data-i18n="smb.label.share"></span></label>
         <input type="text" id="node-config-input-share" data-i18n="[placeholder]smb.placeholder.share">
     </div>
 
     <div class="form-row">
-        <label for="node-config-input-domain">
-            <i class="fa fa-globe"></i>
-            <span data-i18n="smb.label.domain"></span>
-        </label>
+        <label for="node-config-input-domain"><i class="fa fa-globe"></i> <span data-i18n="smb.label.domain"></span></label>
         <input type="text" id="node-config-input-domain" data-i18n="[placeholder]smb.placeholder.domain">
     </div>
 
     <div class="form-row">
-        <label for="node-config-input-username">
-            <i class="fa fa-user"></i>
-            <span data-i18n="smb.label.username"></span>
-        </label>
-        <input type="text" id="node-config-input-username" data-i18n="[placeholder]smb.placeholder.username">
+        <label for="node-config-input-user"><i class="fa fa-user"></i> <span data-i18n="smb.label.username"></span></label>
+        <input type="text" id="node-config-input-user" data-i18n="[placeholder]smb.placeholder.username" autocomplete="off">
     </div>
 
     <div class="form-row">
-        <label for="node-config-input-password">
-            <i class="fa fa-key"></i>
-            <span data-i18n="smb.label.password"></span>
-        </label>
-        <input type="password" id="node-config-input-password" data-i18n="[placeholder]smb.placeholder.password">
+        <label for="node-config-input-pass"><i class="fa fa-key"></i> <span data-i18n="smb.label.password"></span></label>
+        <input type="password" id="node-config-input-pass" autocomplete="new-password">
     </div>
 
+    <!-- legacy plain-text credentials from the original package (cleared on save) -->
+    <input type="hidden" id="node-config-input-username">
+    <input type="hidden" id="node-config-input-password">
+
     <div class="form-row">
-        <label for="node-config-input-name">
-            <i class="fa fa-tag"></i>
-            <span data-i18n="smb.label.name"></span>
-        </label>
+        <label for="node-config-input-name"><i class="fa fa-tag"></i> <span data-i18n="smb.label.name"></span></label>
         <input type="text" id="node-config-input-name">
     </div>
 
+    <div class="form-row">
+        <a href="#" id="smb-config-advanced-toggle"><i class="fa fa-caret-right"></i> <span data-i18n="smb.label.advanced"></span></a>
+    </div>
 
-</script>
-
-<script type="text/x-red" data-help-name="smb config">
-    <p>
-        Defines a connection to a SMB share and its parameters
-    </p>
-
-    <h3>Details</h3>
-    <dl class="message-properties">
-        <dt>Share
-            <span class="property-type">string</span>
-        </dt>
-        <dd>
-            The target to connect to. This usually has the
-            syntax <code>\\address\share</code>
-        </dd>
-
-        <dt>Domain
-            <span class="property-type">string</span>
-        </dt>
-        <dd>
-            The domain used for the authentication. Leave it
-            empty if the target is not part of a domain
-        </dd>
-
-        <dt>Username
-            <span class="property-type">string</span>
-        </dt>
-        <dd>The username used for authentication</dd>
-
-        <dt>Password
-            <span class="property-type">string</span>
-        </dt>
-        <dd>The password used for authentication</dd>
-    </dl>
+    <div id="smb-config-advanced" style="display:none;">
+        <div class="form-row">
+            <label for="node-config-input-port"><i class="fa fa-plug"></i> <span data-i18n="smb.label.port"></span></label>
+            <input type="text" id="node-config-input-port" placeholder="445" style="width:100px;">
+        </div>
+        <div class="form-row">
+            <label for="node-config-input-timeout"><i class="fa fa-clock-o"></i> <span data-i18n="smb.label.timeout"></span></label>
+            <input type="text" id="node-config-input-timeout" style="width:100px;"> <span data-i18n="smb.label.seconds"></span>
+        </div>
+        <div class="form-row">
+            <label for="node-config-input-idleTimeout"><i class="fa fa-hourglass-half"></i> <span data-i18n="smb.label.idle"></span></label>
+            <input type="text" id="node-config-input-idleTimeout" style="width:100px;"> <span data-i18n="smb.label.seconds"></span>
+        </div>
+        <div class="form-row">
+            <label for="node-config-input-retries"><i class="fa fa-repeat"></i> <span data-i18n="smb.label.retries"></span></label>
+            <input type="text" id="node-config-input-retries" style="width:100px;">
+        </div>
+        <div class="form-row">
+            <label for="node-config-input-maxReadMB"><i class="fa fa-database"></i> <span data-i18n="smb.label.maxread"></span></label>
+            <input type="text" id="node-config-input-maxReadMB" style="width:100px;"> MB
+        </div>
+        <div class="form-tips" data-i18n="[html]smb.tip.advanced"></div>
+    </div>
 </script>
 
 <script type="text/javascript">
-    RED.nodes.registerType("smb config", {
-        category: 'config',
-        color: '#FFAAAA',
-        defaults: {
-            name: {
-                value: "默认全局配置共享参数"
-            },
-            share: {
-                value: "\\"
-            },
-            domain: {
-                value: ""
-            },
-            username: {
-                type: "text"
-            },
-            password: {
-                type: "password"
-            }
-        },
-        label: function () {
-            return this.name || this.share || "smb config";
+    (function () {
+        function isNonNegative(v) {
+            return v === "" || v === undefined || (/^\d+(\.\d+)?$/).test(String(v));
         }
-    });
+        RED.nodes.registerType("smb config", {
+            category: 'config',
+            defaults: {
+                name: { value: "" },
+                share: {
+                    value: "",
+                    required: true,
+                    validate: function (v) {
+                        var s = String(v || "").replace(/^smb:/i, "").replace(/\//g, "\\").replace(/^\\+/, "");
+                        return s.split("\\").filter(function (p) { return p; }).length >= 2;
+                    }
+                },
+                domain: { value: "" },
+                port: { value: "", validate: function (v) { return v === "" || v === undefined || (/^\d{1,5}$/).test(String(v)); } },
+                timeout: { value: 60, validate: isNonNegative },
+                idleTimeout: { value: 30, validate: isNonNegative },
+                retries: { value: 1, validate: function (v) { return v === "" || v === undefined || (/^\d+$/).test(String(v)); } },
+                maxReadMB: { value: 100, validate: isNonNegative },
+                // legacy (the original package stored them in clear text)
+                username: { value: "" },
+                password: { value: "" }
+            },
+            credentials: {
+                user: { type: "text" },
+                pass: { type: "password" }
+            },
+            label: function () {
+                return this.name || this.share || "smb config";
+            },
+            oneditprepare: function () {
+                var creds = this.credentials || {};
+                // Migrate clear-text credentials of the original package
+                if (this.username && !$("#node-config-input-user").val()) {
+                    $("#node-config-input-user").val(this.username);
+                }
+                if (this.password && !creds.has_pass && !$("#node-config-input-pass").val()) {
+                    $("#node-config-input-pass").val(this.password);
+                }
+                if (this.share === "\\") $("#node-config-input-share").val("");
+                if (this.name === "默认全局配置共享参数") $("#node-config-input-name").val("");
+                var defs = { timeout: 60, idleTimeout: 30, retries: 1, maxReadMB: 100 };
+                Object.keys(defs).forEach(function (k) {
+                    var el = $("#node-config-input-" + k);
+                    if (el.val() === "") el.val(defs[k]);
+                });
+
+                $("#smb-config-advanced-toggle").on("click", function (e) {
+                    e.preventDefault();
+                    var box = $("#smb-config-advanced");
+                    box.toggle();
+                    $(this).find("i").toggleClass("fa-caret-right", !box.is(":visible"))
+                        .toggleClass("fa-caret-down", box.is(":visible"));
+                });
+            },
+            oneditsave: function () {
+                // credentials are now stored encrypted: wipe the clear-text copies
+                $("#node-config-input-username").val("");
+                $("#node-config-input-password").val("");
+            }
+        });
+    })();
 </script>

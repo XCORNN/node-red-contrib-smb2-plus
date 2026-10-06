@@ -1,30 +1,61 @@
 {
-  "name": "node-red-contrib-smb2.5",
-  "version": "1.16.0",
-  "description": "Node-RED for the SMB protocol",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "name": "node-red-contrib-smb2-plus",
+  "version": "2.0.0",
+  "description": "Robust Node-RED nodes for Windows / Samba shared folders (SMB2): queue, timeouts, auto-reconnect, safe retries, encrypted credentials, text encodings",
   "keywords": [
     "node-red",
-    "smb"
+    "smb",
+    "smb2",
+    "samba",
+    "cifs",
+    "windows share",
+    "file server",
+    "network share"
+  ],
+  "license": "Apache-2.0",
+  "contributors": [
+    "ST-One Ltda. (node-red-contrib-smb)",
+    "Y., Ryota (node-red-contrib-smb2)",
+    "Delevin888 (node-red-contrib-smb2.5)"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/XCORNN/node-red-contrib-smb2-plus.git"
+  },
+  "bugs": {
+    "url": "https://github.com/XCORNN/node-red-contrib-smb2-plus/issues"
+  },
+  "homepage": "https://github.com/XCORNN/node-red-contrib-smb2-plus#readme",
+  "files": [
+    "red/",
+    "examples/",
+    "README.md",
+    "README.es.md",
+    "CHANGELOG.md",
+    "LICENSE",
+    "NOTICE"
   ],
   "node-red": {
+    "version": ">=2.0.0",
     "nodes": {
       "SMB": "red/smb.js"
     }
   },
-  "author": {
-    "name": "Delevin",
-    "email": "hcyan1688@gmail.com",
-    "url": "https://github.com/Delevin888"
+  "engines": {
+    "node": ">=14"
   },
-  "license": "Apache-2.0",
   "dependencies": {
-    "@tryjsky/v9u-smb2": "^1.1.0"
+    "@tryjsky/v9u-smb2": "1.1.0"
   },
-  "publishConfig": {
-    "registry": "https://registry.npmjs.org/"
+  "bundleDependencies": [
+    "@tryjsky/v9u-smb2"
+  ],
+  "devDependencies": {
+    "mocha": "^10.8.2",
+    "node-red": "^4.1.0",
+    "node-red-node-test-helper": "^0.3.4"
+  },
+  "scripts": {
+    "test": "mocha --exit --timeout 60000 \"test/**/*_spec.js\""
   }
 }

@@ -10,31 +10,61 @@
             "operation": "Operation",
             "path": "Path",
             "path-new": "New path",
-            "format": "Output"
+            "format": "Output",
+            "mode": "If file exists",
+            "encoding": "Text encoding",
+            "overwrite": "Overwrite destination if it exists",
+            "detailed": "Include details (size, dates, type)",
+            "advanced": "Advanced settings",
+            "port": "Port",
+            "timeout": "Operation timeout",
+            "idle": "Close idle session after",
+            "retries": "Retries",
+            "maxread": "Max. read size",
+            "seconds": "seconds"
         },
         "placeholder": {
-            "share": "\\\\address\\share",
-            "domain": "domain.local",
-            "username": "username",
-            "password": "password",
-            "path": "some\\path",
-            "path-new": "another\\new\\path"
+            "share": "\\\\server.domain.local\\share",
+            "domain": "DOMAIN (leave empty for local accounts)",
+            "username": "user (or DOMAIN\\user)",
+            "path": "folder\\file.txt (empty = msg.filename)",
+            "path-new": "folder\\new-name.txt (empty = msg.new_filename)"
         },
         "operation": {
             "read-dir": "Read directory",
             "read-file": "Read file",
             "unlink": "Remove file",
-            "rename": "Rename / Move file",
-            "create": "Create file",
+            "rename": "Rename / Move",
+            "create": "Write file",
             "mkdir": "Create directory",
             "rmdir": "Remove directory",
             "exists": "Exists",
-            "ensure-dir": "Ensure dir",
-            "info": "Info"
+            "ensure-dir": "Ensure directory",
+            "info": "Info",
+            "msg": "- set by msg.operation -"
         },
         "format": {
-            "string": "a UTF-8 String",
-            "binary": "a binary Buffer"
+            "string": "UTF-8 text",
+            "auto": "Text, auto-detect encoding",
+            "windows-1252": "Windows-1252 text (ANSI)",
+            "utf16le": "UTF-16 LE text",
+            "latin1": "ISO-8859-1 text",
+            "binary": "Binary buffer"
+        },
+        "mode": {
+            "create": "Fail (do not touch it)",
+            "overwrite": "Overwrite",
+            "append": "Append to the end"
+        },
+        "encoding": {
+            "utf8": "UTF-8",
+            "utf8bom": "UTF-8 with BOM (Excel-friendly CSV)",
+            "windows-1252": "Windows-1252 (ANSI)",
+            "utf16le": "UTF-16 LE with BOM",
+            "latin1": "ISO-8859-1"
+        },
+        "tip": {
+            "advanced": "<b>Timeout</b>: maximum time for one operation (0 = no limit).<br><b>Idle</b>: the session is closed after this time without activity and reopened automatically when needed; keep it shorter than the server's idle timeout (0 = never close).<br><b>Retries</b>: extra attempts after a connection error, only when safe (append, create, rename and delete are not repeated if the server may have executed them). Login errors are never retried.<br><b>Max. read size</b>: files are read fully into memory; bigger files are rejected (0 = no limit)."
         }
     }
 }
